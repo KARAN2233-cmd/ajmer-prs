@@ -18,14 +18,27 @@ if not re.fullmatch(r"[A-Za-z0-9_-]{80,100}", vapid):
 
 os.makedirs("site", exist_ok=True)
 
+ANY_PLACEHOLDER = re.compile(r"__[A-Z_]+__")
+
 for template, target in [("index.template.html", "index.html"),
                          ("firebase-messaging-sw.template.js", "firebase-messaging-sw.js")]:
+    if not os.path.exists(template):
+        sys.exit("Missing template file in the repo root: " + template)
+
     text = open(template, encoding="utf-8").read()
     for n, v in values.items():
         text = text.replace("__" + n + "__", v)
-    left = re.findall(r"__[A-Z_]+__", text)
+
+    # Fail only if one of OUR placeholders is still present.
+    left = [n for n in NAMES if "__" + n + "__" in text]
     if left:
-        sys.exit(template + " still has placeholders: " + ", ".join(sorted(set(left))))
+        sys.exit(template + " still has placeholders: " + ", ".join(left))
+
+    # Any other __WORD__ token (e.g. in a comment) is only a warning, with line numbers.
+    for i, line in enumerate(text.splitlines(), 1):
+        if ANY_PLACEHOLDER.search(line):
+            print("Warning: %s:%d has an unknown __TOKEN__ (not filled in): %s" % (template, i, line.strip()))
+
     open(os.path.join("site", target), "w", encoding="utf-8").write(text)
 
 for f in ["manifest.json", "icon-192.png", "icon-512.png"]:
