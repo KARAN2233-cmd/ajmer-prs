@@ -85,7 +85,7 @@ const SAVE_KEY = 'prs_notify_v1';
 
 function show(text, type) { const m = $('msg'); m.hidden = !text; m.textContent = text || ''; m.className = 'msg ' + (type || 'info'); }
 
-/* "not configured" only when a real placeholder like __NAME__ is still present */
+/* "not configured" only when a value still starts and ends with double underscores */
 const PLACEHOLDER = /^__[A-Z_]+__$/;
 const configured = () => ![
   FIREBASE_CONFIG.apiKey, FIREBASE_CONFIG.authDomain, FIREBASE_CONFIG.projectId,
