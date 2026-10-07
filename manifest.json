@@ -1,6 +1,6 @@
 {
-  "name": "Ajmer Requisition Notifications",
-  "short_name": "Requisition Alerts",
+  "name": "Purchase Requisition",
+  "short_name": "Purchase Requisition",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
