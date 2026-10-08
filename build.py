@@ -22,7 +22,7 @@ os.makedirs("site", exist_ok=True)
 ANY_PLACEHOLDER = re.compile(r"__[A-Z_]+__")
 
 def find_template(*names):
-    """Accepts either spelling (index.template.html or index_template.html)."""
+    """Accepts either spelling (index.template.html or index.html)."""
     for n in names:
         if os.path.exists(n):
             return n
