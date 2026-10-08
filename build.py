@@ -1,4 +1,4 @@
-"""Builds the website into ./site and fills in the Firebase values from GitHub Secrets."""
+"""Builds the website into ./site and fills in the Firebase values from GitHub Secrets (or Variables)."""
 import os, re, shutil, sys
 
 NAMES = [
@@ -9,7 +9,8 @@ NAMES = [
 values = {n: os.environ.get(n, "").strip() for n in NAMES}
 missing = [n for n, v in values.items() if not v]
 if missing:
-    sys.exit("Missing GitHub Secrets: " + ", ".join(missing))
+    sys.exit("Missing or empty GitHub Secrets/Variables: " + ", ".join(missing) +
+             "  (names must match exactly, in Settings > Secrets and variables > Actions)")
 
 vapid = values["VAPID_KEY"]
 if not re.fullmatch(r"[A-Za-z0-9_-]{80,100}", vapid):
@@ -20,10 +21,17 @@ os.makedirs("site", exist_ok=True)
 
 ANY_PLACEHOLDER = re.compile(r"__[A-Z_]+__")
 
-for template, target in [("index.template.html", "index.html"),
-                         ("firebase-messaging-sw.template.js", "firebase-messaging-sw.js")]:
-    if not os.path.exists(template):
-        sys.exit("Missing template file in the repo root: " + template)
+def find_template(*names):
+    """Accepts either spelling (index.template.html or index_template.html)."""
+    for n in names:
+        if os.path.exists(n):
+            return n
+    sys.exit("Missing template file in the repo root. Expected one of: " + ", ".join(names)
+             + ". Files found: " + ", ".join(sorted(os.listdir("."))))
+
+for names, target in [(("index.template.html", "index_template.html"), "index.html"),
+                      (("firebase-messaging-sw.template.js", "firebase-messaging-sw_template.js"), "firebase-messaging-sw.js")]:
+    template = find_template(*names)
 
     text = open(template, encoding="utf-8").read()
     for n, v in values.items():
